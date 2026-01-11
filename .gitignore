@@ -1,0 +1,10 @@
+.gradio/
+.venv/
+__pycache__/
+/data/EmotionRecognitionDataset/*
+!/data/EmotionRecognitionDataset/README.md
+/data/GoEmotions/*
+!/data/GoEmotions/README.md
+.idea/
+models/
+*.joblib

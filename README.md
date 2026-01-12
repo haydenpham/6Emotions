@@ -52,6 +52,17 @@ The model uses a combination of:
 - **Hyperparameter tuning:** GridSearchCV with 3-fold cross-validation
 - **Class balancing:** `class_weight='balanced'`
 
+## Performance
+
+### Model Metrics
+- **Cross-Validation Accuracy:** 0.7163
+- **Test Accuracy:** 0.70
+- **Training Size:** 41,974
+- **Test Size:** 6,067
+
+### Confusion Matrix
+![Confusion Matrix](figures/confusionMaxtrixNormalized.png)
+
 ## Limitations
 - Trained on English text; performance on other languages is not guaranteed.
 - May not generalize well to formal and technical texts.

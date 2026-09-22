@@ -2,9 +2,11 @@
 Load and merge data from datasets EmotionRecognition and GoEmotions.
 """
 
-import pandas as pd
-import numpy as np
+from pathlib import Path
 from typing import Dict
+
+import numpy as np
+import pandas as pd
 
 TARGET_LABELS = ['sadness', 'joy', 'love', 'anger', 'fear', 'surprise']
 
@@ -76,14 +78,16 @@ def load_goemotions(path: str) -> pd.DataFrame:
             if raw_emotion in REVERSE_GO_MAPPING:
                 found_targets.add(REVERSE_GO_MAPPING[raw_emotion])
 
-        for target in found_targets:
+        for target in TARGET_LABELS:
+            if target not in found_targets:
+                continue
             texts.append(row['text'])
             labels.append(target)
 
     return pd.DataFrame({'text': texts, 'label': labels})
 
 
-def load_all_data(base_path: str = '', random_state: int = 42) -> Dict[str, pd.DataFrame]:
+def load_all_data(base_path: str = 'data', random_state: int = 42) -> Dict[str, pd.DataFrame]:
     paths = {
         'orig_train': f'{base_path}/EmotionRecognitionDataset/training.csv',
         'orig_val':   f'{base_path}/EmotionRecognitionDataset/validation.csv',
@@ -92,6 +96,9 @@ def load_all_data(base_path: str = '', random_state: int = 42) -> Dict[str, pd.D
         'go_val':     f'{base_path}/GoEmotions/data/dev.tsv',
         'go_test':    f'{base_path}/GoEmotions/data/test.tsv'
     }
+    missing = [path for path in paths.values() if not Path(path).is_file()]
+    if missing:
+        raise FileNotFoundError(f"Dataset files missing: {', '.join(missing)}")
 
     orig_train = load_emotion_recognition(paths['orig_train'])
     orig_val = load_emotion_recognition(paths['orig_val'])
@@ -118,4 +125,3 @@ def load_all_data(base_path: str = '', random_state: int = 42) -> Dict[str, pd.D
         'full_train': full_train_df,
         'full_test': full_test_df
     }
-

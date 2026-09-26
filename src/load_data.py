@@ -87,7 +87,13 @@ def load_goemotions(path: str) -> pd.DataFrame:
     return pd.DataFrame({'text': texts, 'label': labels})
 
 
-def load_all_data(base_path: str = 'data', random_state: int = 42) -> Dict[str, pd.DataFrame]:
+def _single_label_texts(frame: pd.DataFrame) -> pd.DataFrame:
+    """Keep one row per exact text only when all its labels agree."""
+    unambiguous = frame.groupby('text')['label'].transform('nunique').eq(1)
+    return frame.loc[unambiguous].drop_duplicates(subset=['text']).reset_index(drop=True)
+
+
+def load_all_data(base_path: str | Path = 'data', random_state: int = 42) -> Dict[str, pd.DataFrame]:
     paths = {
         'orig_train': f'{base_path}/EmotionRecognitionDataset/training.csv',
         'orig_val':   f'{base_path}/EmotionRecognitionDataset/validation.csv',
@@ -108,12 +114,15 @@ def load_all_data(base_path: str = 'data', random_state: int = 42) -> Dict[str, 
     go_val = load_goemotions(paths['go_val'])
     go_test = load_goemotions(paths['go_test'])
 
-    # Combine
-    full_train_df = pd.concat([orig_train, orig_val, go_train, go_val], ignore_index=True)
-    full_train_df = full_train_df.sample(frac=1, random_state=random_state).reset_index(drop=True)
-    full_train_df = full_train_df.drop_duplicates(subset=['text'])
+    full_test_df = _single_label_texts(pd.concat([orig_test, go_test], ignore_index=True))
 
-    full_test_df = pd.concat([orig_test, go_test], ignore_index=True)
+    full_train_df = _single_label_texts(
+        pd.concat([orig_train, orig_val, go_train, go_val], ignore_index=True)
+    )
+    full_train_df = full_train_df.loc[
+        ~full_train_df['text'].isin(full_test_df['text'])
+    ]
+    full_train_df = full_train_df.sample(frac=1, random_state=random_state).reset_index(drop=True)
 
     return {
         'orig_train': orig_train,
@@ -125,3 +134,14 @@ def load_all_data(base_path: str = 'data', random_state: int = 42) -> Dict[str, 
         'full_train': full_train_df,
         'full_test': full_test_df
     }
+
+
+def load_model_data(base_path: str | Path = 'data', random_state: int = 42, joy_cap: int = 12000) -> Dict[str, pd.DataFrame]:
+    # Return the shared six-emotion train and test sets for models
+    data = load_all_data(base_path=base_path, random_state=random_state)
+    full_train = data['full_train']
+    joy = full_train[full_train['label'] == 'joy'].sample(n=joy_cap, random_state=random_state)
+    other = full_train[full_train['label'] != 'joy']
+    full_train = pd.concat([joy, other], ignore_index=True)
+    full_train = full_train.sample(frac=1, random_state=random_state).reset_index(drop=True)
+    return {'full_train': full_train, 'full_test': data['full_test']}

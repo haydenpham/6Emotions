@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from huggingface_hub import HfApi
 
 def upload_model(model_path: str, repo_id: str):
@@ -12,6 +14,6 @@ def upload_model(model_path: str, repo_id: str):
 
 if __name__ == "__main__":
     upload_model(
-        model_path="../models/6emotions_model.skops",
+        model_path=str(Path(__file__).resolve().parents[1] / "models/logreg/artifacts/6emotions_model.skops"),
         repo_id="<username>/6emotions-classifier"
     )

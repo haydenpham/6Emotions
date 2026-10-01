@@ -1,0 +1,32 @@
+{
+  "model_type": "TF-IDF + MLPClassifier",
+  "random_state": 42,
+  "training_rows": 41718,
+  "test_rows": 5421,
+  "joy_cap": 14000,
+  "mlp_settings": {
+    "hidden_layer_sizes": [
+      64
+    ],
+    "activation": "relu",
+    "solver": "adam",
+    "alpha": 0.0001,
+    "batch_size": 256,
+    "learning_rate_init": 0.001,
+    "max_iter": 100,
+    "early_stopping": true,
+    "validation_fraction": 0.1,
+    "n_iter_no_change": 10
+  },
+  "epochs": 14,
+  "test_accuracy": 0.7507839881940601,
+  "test_macro_f1": 0.714166526432798,
+  "labels": [
+    "sadness",
+    "joy",
+    "love",
+    "anger",
+    "fear",
+    "surprise"
+  ]
+}

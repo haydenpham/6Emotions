@@ -1,0 +1,20 @@
+{
+  "base_model": "distilbert-base-uncased",
+  "random_state": 42,
+  "training_rows": 39718,
+  "test_rows": 5421,
+  "joy_cap": 12000,
+  "epochs": 3,
+  "batch_size": 16,
+  "max_length": 128,
+  "learning_rate": 2e-05,
+  "test_accuracy": 0.8273381294964028,
+  "labels": [
+    "sadness",
+    "joy",
+    "love",
+    "anger",
+    "fear",
+    "surprise"
+  ]
+}

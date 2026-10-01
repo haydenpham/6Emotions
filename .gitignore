@@ -6,5 +6,6 @@ __pycache__/
 /data/GoEmotions/*
 !/data/GoEmotions/README.md
 .idea/
-models/
+/models/*/artifacts/
+/models/*/runs/
 *.joblib

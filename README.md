@@ -1,91 +1,36 @@
----
-license: mit
-language:
-  - en
-library_name: sklearn
-tags:
-  - text-classification
-  - emotion-detection
-  - sklearn
-  - skops
-datasets:
-  - custom
-metrics:
-  - accuracy
-pipeline_tag: text-classification
----
+# 6Emotions
 
-# 6 Emotions Text Classification Model
+Classify English text into six emotions: anger, fear, joy, love, sadness, and surprise. The project has TF-IDF models using logistic regression and a small neural network, plus a fine-tuned DistilBERT experiment. The Gradio app in `spaces/` serves LogReg.
 
-A logistic regression model for classifying text into 6 emotion categories.
+```text
+data/                     shared source datasets
+src/load_data.py          shared label mapping and model data preparation
+src/features.py           shared TF-IDF features (LogReg and MLP)
+src/evaluate.py           shared confusion matrix plots
+notebooks/data_discovery.ipynb
+models/
+  logreg/                 training, results, local artifacts
+  mlp/                    training, results, local artifacts
+  distilbert/             training, results, local artifacts and runs
+spaces/                   Gradio app and Dockerfile for the Hugging Face Space
+```
 
-## Model Description
+Each model folder contains `train.ipynb`, a README, and tracked `results/`. Trained weights and intermediate runs go in Git-ignored `artifacts/` and `runs/`.
 
-- **Model type:** Logistic Regression with TF-IDF features
-- **Language:** English
-- **Task:** Multi-class text classification
-- **Labels:** anger, fear, joy, love, sadness, surprise
+| Model | Configuration | Test accuracy | Training / test rows |
+| --- | --- | ---: | ---: |
+| [LogReg](models/logreg/README.md) | TF-IDF, C=1.0, balanced | 0.7449 | 39,718 / 5,421 |
+| [MLP](models/mlp/README.md) | TF-IDF, one hidden layer of 64 | 0.7508 | 41,718 / 5,421 |
+| [DistilBERT](models/distilbert/README.md) | 3 epochs, lr 2e-5, weighted loss | 0.8273 | 39,718 / 5,421 |
 
-## Training Data
+All three models are evaluated on the same 5,421-row test set. The MLP trains with a `joy` cap of 14,000 instead of 12,000, so its training set has 2,000 more `joy` texts than the other two.
 
-This model was trained on a merged dataset from two sources:
+## Data and training
 
-1. **GoEmotions** (Google): A corpus of 58k Reddit comments with 27 emotion categories
-   - Source: [Kaggle](https://www.kaggle.com/datasets/shivamb/go-emotions-google-emotions-dataset)
-   - Paper: [arXiv:2005.00547](https://arxiv.org/abs/2005.00547)
+All three models use the same [data loader](src/load_data.py). It combines the Emotion Recognition Dataset and GoEmotions, maps labels to six emotions, excludes texts with conflicting labels, and keeps one row per remaining text. It then removes test texts from training and caps `joy`. `load_model_data` asserts that no test text appears in training. Each model trains one fixed configuration on the full training set and is evaluated once on the held-out test set. Each notebook saves a count and a row-normalized confusion matrix to its `results/`. The dataset READMEs are in [EmotionRecognitionDataset](data/EmotionRecognitionDataset/README.md) and [GoEmotions](data/GoEmotions/README.md).
 
-2. **Emotion Dataset**: Text samples labeled with basic emotions
-   - Source: [Kaggle](https://www.kaggle.com/datasets/parulpandey/emotion-dataset/data)
-   - Paper: [EMNLP 2018](https://www.aclweb.org/anthology/D18-1404)
+Install `requirements.txt`, then open a model's `train.ipynb` with Jupyter started from the repository root or that model's folder. See the model READMEs for training details and outputs.
 
-Labels were mapped to 6 core emotion categories for this model.
+## Space
 
-## Features
-
-The model uses a combination of:
-- **Word-level TF-IDF:** unigrams to trigrams (max 20,000 features)
-- **Character-level TF-IDF:** 3-5 character n-grams (max 15,000 features)
-
-## Training
-
-- **Framework:** scikit-learn
-- **Hyperparameter tuning:** GridSearchCV with 3-fold cross-validation
-- **Class balancing:** `class_weight='balanced'`
-
-## Performance
-
-### Model Metrics
-- **Cross-Validation Accuracy:** 0.7163
-- **Test Accuracy:** 0.70
-- **Training Size:** 41,974
-- **Test Size:** 6,067
-
-### Confusion Matrix
-![Confusion Matrix](figures/confusionMaxtrixNormalized.png)
-
-## Limitations
-- Trained on English text; performance on other languages is not guaranteed.
-- May not generalize well to formal and technical texts.
-- Single-label classification (no multi-emotion detection).
-- Potential biases from training data sources.
-
-## Usage
-
-```python
-import skops.io as sio
-
-# Load model (review untrusted types before loading)
-trusted_types = [
-    "sklearn.pipeline.Pipeline",
-    "sklearn.linear_model._logistic.LogisticRegression",
-    "sklearn.feature_extraction.text.TfidfVectorizer",
-    "numpy.ndarray",
-    "numpy.dtype"
-]
-
-model = sio.load("6emotions_model.skops", trusted=trusted_types)
-
-# Predict
-text = "I'm so happy today!"
-prediction = model.predict([text])
-print(prediction)  # ['joy']
+`spaces/` is a Docker Space. The app loads `6emotions_model.skops` from its own folder, so copy `models/logreg/artifacts/6emotions_model.skops` into `spaces/` before building. [upload_to_hub.py](src/upload_to_hub.py) publishes the same file to a Hugging Face model repo; set `repo_id` first.

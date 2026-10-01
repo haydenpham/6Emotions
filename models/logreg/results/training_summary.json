@@ -1,0 +1,16 @@
+{
+  "random_state": 42,
+  "training_rows": 39718,
+  "test_rows": 5421,
+  "joy_cap": 12000,
+  "C": 1.0,
+  "test_accuracy": 0.7448810182623132,
+  "labels": [
+    "sadness",
+    "joy",
+    "love",
+    "anger",
+    "fear",
+    "surprise"
+  ]
+}

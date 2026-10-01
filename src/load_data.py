@@ -44,22 +44,14 @@ for target, sources in GO_MAPPING.items():
 
 
 def load_emotion_recognition(path: str) -> pd.DataFrame:
-    try:
-        df = pd.read_csv(path)
-        if df['label'].dtype in [int, np.int64]:
-            df['label'] = df['label'].map(EMOTION_RECOGNITION_LABEL_MAP)
-        return df[['text', 'label']]
-    except FileNotFoundError:
-        print(f"Warning: File not found at {path}")
-        return pd.DataFrame(columns=['text', 'label'])
+    df = pd.read_csv(path)
+    if df['label'].dtype in [int, np.int64]:
+        df['label'] = df['label'].map(EMOTION_RECOGNITION_LABEL_MAP)
+    return df[['text', 'label']]
 
 
 def load_goemotions(path: str) -> pd.DataFrame:
-    try:
-        df = pd.read_csv(path, sep='\t', header=None, names=['text', 'label_ids', 'id'])
-    except FileNotFoundError:
-        print(f"Warning: File not found at {path}")
-        return pd.DataFrame(columns=['text', 'label'])
+    df = pd.read_csv(path, sep='\t', header=None, names=['text', 'label_ids', 'id'])
 
     texts = []
     labels = []
@@ -144,4 +136,9 @@ def load_model_data(base_path: str | Path = 'data', random_state: int = 42, joy_
     other = full_train[full_train['label'] != 'joy']
     full_train = pd.concat([joy, other], ignore_index=True)
     full_train = full_train.sample(frac=1, random_state=random_state).reset_index(drop=True)
-    return {'full_train': full_train, 'full_test': data['full_test']}
+    full_test = data['full_test']
+
+    # Guard against test leakage
+    assert not set(full_train['text']) & set(full_test['text']), 'Test texts found in training data'
+    assert not full_test['text'].duplicated().any(), 'Duplicate texts in test data'
+    return {'full_train': full_train, 'full_test': full_test}

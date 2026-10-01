@@ -1,8 +1,12 @@
 pandas~=2.3.3
 numpy~=2.4.1
 matplotlib~=3.10.8
-scikit-learn
+scikit-learn>=1.7
 seaborn
 skops
 huggingface-hub
 gradio>=5.11.0
+torch
+transformers
+datasets
+accelerate

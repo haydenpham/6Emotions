@@ -1,26 +1,26 @@
 {
   "model_type": "TF-IDF + MLPClassifier",
   "random_state": 42,
-  "training_rows": 41718,
+  "training_rows": 39718,
   "test_rows": 5421,
-  "joy_cap": 14000,
+  "joy_cap": 12000,
   "mlp_settings": {
     "hidden_layer_sizes": [
-      64
+      512
     ],
     "activation": "relu",
     "solver": "adam",
-    "alpha": 0.0001,
+    "alpha": 0.1,
     "batch_size": 256,
-    "learning_rate_init": 0.001,
-    "max_iter": 100,
+    "learning_rate_init": 0.0003,
+    "max_iter": 20,
     "early_stopping": true,
     "validation_fraction": 0.1,
-    "n_iter_no_change": 10
+    "n_iter_no_change": 5
   },
-  "epochs": 14,
-  "test_accuracy": 0.7507839881940601,
-  "test_macro_f1": 0.714166526432798,
+  "epochs": 10,
+  "test_accuracy": 0.7557646190739716,
+  "test_macro_f1": 0.7178575400509105,
   "labels": [
     "sadness",
     "joy",

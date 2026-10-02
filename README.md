@@ -20,10 +20,10 @@ Each model folder contains `train.ipynb`, a README, and tracked `results/`. Trai
 | Model | Configuration | Test accuracy | Training / test rows |
 | --- | --- | ---: | ---: |
 | [LogReg](models/logreg/README.md) | TF-IDF, C=1.0, balanced | 0.7449 | 39,718 / 5,421 |
-| [MLP](models/mlp/README.md) | TF-IDF, one hidden layer of 64 | 0.7508 | 41,718 / 5,421 |
+| [MLP](models/mlp/README.md) | TF-IDF, one hidden layer of 512, alpha=0.1 | 0.7558 | 39,718 / 5,421 |
 | [DistilBERT](models/distilbert/README.md) | 3 epochs, lr 2e-5, weighted loss | 0.8273 | 39,718 / 5,421 |
 
-All three models are evaluated on the same 5,421-row test set. The MLP trains with a `joy` cap of 14,000 instead of 12,000, so its training set has 2,000 more `joy` texts than the other two.
+All three models train on the same 39,718 rows and are evaluated on the same 5,421-row test set.
 
 ## Data and training
 
@@ -33,4 +33,15 @@ Install `requirements.txt`, then open a model's `train.ipynb` with Jupyter start
 
 ## Space
 
-`spaces/` is a Docker Space. The app loads `6emotions_model.skops` from its own folder, so copy `models/logreg/artifacts/6emotions_model.skops` into `spaces/` before building. [upload_to_hub.py](src/upload_to_hub.py) publishes the same file to a Hugging Face model repo; set `repo_id` first.
+`spaces/` is a Docker Space. The app loads `6emotions_model.skops` from its own folder, so copy `models/logreg/artifacts/6emotions_model.skops` into `spaces/` before building.
+
+## Hugging Face model repo
+
+All three trained models are published to [haydenpham/6emotions](https://huggingface.co/haydenpham/6emotions), one folder per model. [models/README.md](models/README.md) is the repo's model card, and each model's README is its folder's card. After retraining, republish with:
+
+```bash
+python src/upload_to_hub.py              # all three models
+python src/upload_to_hub.py mlp logreg   # only some
+```
+
+This uploads each model's artifacts, README and `results/` in a single commit. `training_args.bin` is not uploaded.

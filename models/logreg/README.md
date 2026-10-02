@@ -52,7 +52,7 @@ The model uses a combination of:
 - **Regularization:** `C=1.0` (fixed)
 - **Class balancing:** `class_weight='balanced'`
 
-Run [train.ipynb](train.ipynb) after installing the repository's root `requirements.txt`. The notebook uses the shared data preparation and features, trains once on the full training set, and evaluates on the held-out test set. It saves the classifier to `artifacts/` and writes metrics plus count and normalized confusion matrices to `results/`. Start Jupyter from the repository root or this model folder.
+Run [train.ipynb](https://github.com/haydenpham/6Emotions/blob/main/models/logreg/train.ipynb) after installing the repository's root `requirements.txt`. The notebook uses the shared data preparation and features, trains once on the full training set, and evaluates on the held-out test set. It saves the classifier to `artifacts/` and writes metrics plus count and normalized confusion matrices to `results/`. Start Jupyter from the repository root or this model folder.
 
 ## Performance
 
@@ -84,21 +84,11 @@ Rows show true emotions and columns show predictions.
 
 ```python
 import skops.io as sio
+from huggingface_hub import hf_hub_download
 
-# Load model (review untrusted types before loading)
-trusted_types = [
-    "sklearn.pipeline.Pipeline",
-    "sklearn.linear_model._logistic.LogisticRegression",
-    "sklearn.feature_extraction.text.TfidfVectorizer",
-    "sklearn.pipeline.FeatureUnion",
-    "numpy.ndarray",
-    "numpy.dtype"
-]
-
-model = sio.load("models/logreg/artifacts/6emotions_model.skops", trusted=trusted_types)
-
-# Predict
-text = "I'm so happy today!"
-prediction = model.predict([text])
-print(prediction)  # ['joy']
+path = hf_hub_download("haydenpham/6emotions", "logreg/6emotions_model.skops")
+model = sio.load(path, trusted=[])  # every type in this pipeline is trusted by default
+print(model.predict(["I'm so happy today!"]))  # ['joy']
 ```
+
+To load a locally trained model instead, pass `models/logreg/artifacts/6emotions_model.skops` as the path. Run `sio.get_untrusted_types(file=path)` and review the result before loading a model you did not train.
